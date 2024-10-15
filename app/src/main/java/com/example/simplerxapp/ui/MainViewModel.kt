@@ -1,7 +1,5 @@
 package com.example.simplerxapp.ui
 
-
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.simplerxapp.observables.chapter.ChapterObservable
