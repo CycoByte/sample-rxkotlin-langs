@@ -3,31 +3,22 @@ package com.example.simplerxapp.observables.chapter
 import com.example.simplerxapp.database.dao.ChapterDao
 import com.example.simplerxapp.database.entities.ChapterEntity
 import com.example.simplerxapp.models.ChapterModel
-import io.reactivex.rxjava3.core.Maybe
+import kotlinx.coroutines.flow.map
 
 class DataObservable(
     private val dao: ChapterDao
 ) {
 
-    fun fetchForSubjectId(id: String): Maybe<List<ChapterModel>> {
-        return Maybe.fromCallable {
-            dao.fetchForSubjectId(id).map { it.toDomain() }
-        }
+    suspend fun fetchForSubjectId(id: String) = dao.fetchForSubjectId(id).map { it.toDomain() }
+
+    suspend fun saveAll(items: List<ChapterModel>) = items.forEach {
+        dao.save(it.toEntity())
     }
 
-    fun saveAll(items: List<ChapterModel>): Maybe<List<ChapterModel>> {
-        return Maybe.fromCallable {
-            items.forEach {
-                dao.save(it.toEntity())
-            }
-            items
-        }
-    }
+    suspend fun deleteAll() = dao.deleteAll()
 
-    fun deleteAll(): Maybe<Unit> {
-        return Maybe.fromCallable {
-            dao.deleteAll()
-        }
+    fun observableForSubjectId(id: String) = dao.fetchObservableForSubjectId(id).map {
+        it.map { it.toDomain() }
     }
 
     companion object {

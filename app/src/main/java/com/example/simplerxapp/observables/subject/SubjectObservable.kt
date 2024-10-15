@@ -2,9 +2,7 @@ package com.example.simplerxapp.observables.subject
 
 import com.example.simplerxapp.database.ApplicationDatabase
 import com.example.simplerxapp.models.SubjectModel
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.schedulers.Schedulers
-
+import kotlinx.coroutines.flow.Flow
 
 class SubjectObservable(
 //    private val endpointsObservable: EndpointsObservable,
@@ -13,24 +11,22 @@ class SubjectObservable(
 ) {
     private var inMemory: List<SubjectModel> = listOf()
 
-    fun fetchAllLocal(): Maybe<List<SubjectModel>> = dataObservable.fetchAll()
-    fun fetchAllRemote(): Maybe<List<SubjectModel>> = apiObservable.fetchAll()
-    fun deleteAllLocal() = dataObservable.deleteAll()
+    suspend fun fetchAllLocal(): List<SubjectModel> = dataObservable.fetchAll()
+    suspend fun deleteAllLocal() = dataObservable.deleteAll()
+    suspend fun fetchAllRemote(): Result<List<SubjectModel>> = apiObservable.fetchAll()
 
-    fun fetchAll(forced: Boolean = false): Maybe<List<SubjectModel>> {
-        if (forced) {
-            inMemory = listOf()
-        }
-        return if (inMemory.isNotEmpty()) Maybe.just(inMemory) else apiObservable
-            .fetchAll()
-            .doOnSuccess {
+    fun fetchAllLocalObservable(): Flow<List<SubjectModel>> = dataObservable.getFetchAllObservable()
+
+    suspend fun updateLocalFromRemote(): Result<List<SubjectModel>?> {
+        val res = apiObservable.fetchAll()
+        return if (res.isSuccess) {
+            res.getOrNull()?.let {
                 inMemory = it
                 dataObservable.saveAll(it)
-                    .observeOn(Schedulers.io())
-                    .subscribe()
             }
-            .flatMap {
-                dataObservable.fetchAll()
-            }
+            Result.success(res.getOrNull())
+        } else {
+            Result.failure(res.exceptionOrNull() ?: RuntimeException("Update error"))
+        }
     }
 }

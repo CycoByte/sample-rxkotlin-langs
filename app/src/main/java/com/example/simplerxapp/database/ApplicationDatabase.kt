@@ -23,7 +23,7 @@ abstract class ApplicationDatabase: RoomDatabase() {
     abstract fun getChapterDao(): ChapterDao
 
     companion object {
-        const val DATABASE_NAME = "app_db"
+        const val DATABASE_NAME = "app_2_db"
         const val SUBJECTS_TABLE = "subjects_tb"
         const val CHAPTERS_TABLE = "chapters_tb"
 

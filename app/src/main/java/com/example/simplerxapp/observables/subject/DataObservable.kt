@@ -3,31 +3,21 @@ package com.example.simplerxapp.observables.subject
 import com.example.simplerxapp.database.dao.SubjectDao
 import com.example.simplerxapp.database.entities.SubjectEntity
 import com.example.simplerxapp.models.SubjectModel
-import io.reactivex.rxjava3.core.Maybe
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class DataObservable(
     private val subjectDao: SubjectDao
 ) {
 
-    fun fetchAll(): Maybe<List<SubjectModel>> {
-        return Maybe.fromCallable {
-            subjectDao.fetchAll().map { it.toDomain() }
-        }
-    }
+    suspend fun fetchAll(): List<SubjectModel> = subjectDao.fetchAll().map { it.toDomain() }
 
-    fun saveAll(items: List<SubjectModel>): Maybe<List<SubjectModel>> {
-        return Maybe.fromCallable {
-            items.forEach {
-                subjectDao.save(it.toEntity())
-            }
-            items
-        }
-    }
+    suspend fun saveAll(items: List<SubjectModel>) = subjectDao.saveAll(items.map { it.toEntity() })
 
-    fun deleteAll(): Maybe<Unit>  {
-        return Maybe.fromCallable {
-            subjectDao.deleteAll()
-        }
+    suspend fun deleteAll() = subjectDao.deleteAll()
+
+    fun getFetchAllObservable(): Flow<List<SubjectModel>> = subjectDao.fetchAllObservable().map { subs ->
+        subs.map { it.toDomain() }
     }
 
     private fun SubjectEntity.toDomain(): SubjectModel {

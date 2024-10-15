@@ -23,7 +23,7 @@ class RestClient private constructor() {
         processor = RequestLogProcessor(ErrorProcessor(RestProcessor(client)))
     }
 
-    fun <T> execute(request: Request, expected: Class<T>): Result<T> {
+    suspend fun <T> execute(request: Request, expected: Class<T>): Result<T> {
         return try {
             val response = processor.process(request).body ?: return Result.failure(NullPointerException("Empty response"))
             val json = response.string()
@@ -34,7 +34,7 @@ class RestClient private constructor() {
         }
     }
 
-    fun execute(request: Request): Response = processor.process(request)
+    suspend fun execute(request: Request): Response = processor.process(request)
 
     companion object {
 

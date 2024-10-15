@@ -5,7 +5,7 @@ import okhttp3.Request
 import okhttp3.Response
 
 class RequestLogProcessor(private val next: RequestProcessor): RequestProcessor {
-    override fun process(request: Request): Response {
+    override suspend fun process(request: Request): Response {
         Log.d("NETWORK", "request -> ${request.url}")
         val response = next.process(request)
         val execTime = response.receivedResponseAtMillis - response.sentRequestAtMillis

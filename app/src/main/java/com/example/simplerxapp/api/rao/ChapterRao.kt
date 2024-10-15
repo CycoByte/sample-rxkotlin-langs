@@ -11,7 +11,7 @@ class ChapterRao(
     restClient: RestClient = RestClient.instance
 ): BaseRao(restClient) {
 
-    fun fetchChaptersForId(id: String): Result<List<ChapterModel>> {
+    suspend fun fetchChaptersForId(id: String): Result<List<ChapterModel>> {
         val request = Request.Builder()
             .get()
             .url(endpointsRao.fetch().getChaptersForId(id))

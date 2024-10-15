@@ -2,8 +2,7 @@ package com.example.simplerxapp.observables.chapter
 
 import com.example.simplerxapp.database.ApplicationDatabase
 import com.example.simplerxapp.models.ChapterModel
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.flow.Flow
 
 class ChapterObservable(
     private val apiObservable: ApiObservable = ApiObservable(),
@@ -12,24 +11,20 @@ class ChapterObservable(
 
     private var memory: List<ChapterModel> = listOf()
 
-    fun fetchAllChaptersLocal(subjectId: String): Maybe<List<ChapterModel>> = dataObservable.fetchForSubjectId(subjectId)
-    fun fetchAllChaptersRemote(subjectId: String): Maybe<List<ChapterModel>> = apiObservable.fetchForSubjectId(subjectId)
-    fun deleteAllLocal() = dataObservable.deleteAll()
-
-    fun fetchForSubject(id: String): Maybe<List<ChapterModel>> {
-        if (memory.isNotEmpty()) {
-            return Maybe.just(memory)
-        }
-        return apiObservable
-            .fetchForSubjectId(id)
-            .doOnSuccess {
+    suspend fun fetchAllChaptersLocal(subjectId: String): List<ChapterModel> = dataObservable.fetchForSubjectId(subjectId)
+    suspend fun fetchAllChaptersRemote(subjectId: String): Result<List<ChapterModel>> = apiObservable.fetchForSubjectId(subjectId)
+    suspend fun deleteAllLocal() = dataObservable.deleteAll()
+    fun observableLocalChapters(id: String): Flow<List<ChapterModel>> = dataObservable.observableForSubjectId(id)
+    suspend fun updateLocalFromRemote(subjectId: String): Result<Unit> {
+        val res = fetchAllChaptersRemote(subjectId)
+        return if (res.isSuccess) {
+            res.getOrNull()?.let {
                 memory = it
                 dataObservable.saveAll(it)
-                    .observeOn(Schedulers.io())
-                    .subscribe()
             }
-            .flatMap {
-                dataObservable.fetchForSubjectId(id)
-            }
+            Result.success(Unit)
+        } else {
+            Result.failure(res.exceptionOrNull() ?: RuntimeException("Failed to update entries"))
+        }
     }
 }

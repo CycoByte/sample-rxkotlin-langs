@@ -1,26 +1,33 @@
 package com.example.simplerxapp.ui
 
+
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.simplerxapp.observables.chapter.ChapterObservable
 import com.example.simplerxapp.observables.subject.SubjectObservable
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import java.net.UnknownHostException
-import java.util.concurrent.TimeUnit
 
 class MainViewModel: ViewModel() {
 
-    private val compositeDisposable = CompositeDisposable()
     private val subjectObservable = SubjectObservable()
     private val chapterObservable = ChapterObservable()
+
+    private val _subjectsUiRemoteStateMSF = MutableStateFlow<UIState<*>>(UIState.Idle)
+    val subjectsRemoteUiStateSF: StateFlow<UIState<*>>
+        get() = _subjectsUiRemoteStateMSF
 
     private val _subjectsUiStateMSF = MutableStateFlow<UIState<*>>(UIState.Idle)
     val subjectsUiStateSF: StateFlow<UIState<*>>
         get() = _subjectsUiStateMSF
+
+    private val _chaptersRemoteUiStateMSF = MutableStateFlow<UIState<*>>(UIState.Idle)
+    val chaptersRemoteUiStateSF: StateFlow<UIState<*>>
+        get() = _chaptersRemoteUiStateMSF
 
     private val _chaptersUiStateMSF = MutableStateFlow<UIState<*>>(UIState.Idle)
     val chaptersUiStateSF: StateFlow<UIState<*>>
@@ -29,74 +36,60 @@ class MainViewModel: ViewModel() {
     private var lastShownError: Throwable? = null
 
     fun loadAllSubjects() {
-        _subjectsUiStateMSF.value = UIState.Loading
-        compositeDisposable.add(
-            subjectObservable.fetchAll()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSuccess { subjects ->
-                    subjects.forEach {
-                        compositeDisposable.add(
-                            chapterObservable.fetchForSubject(it.id)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe()
+        viewModelScope.launch(Dispatchers.IO) {
+            _subjectsUiStateMSF.value = UIState.Loading
+            subjectObservable.fetchAllLocalObservable().collect {
+                _subjectsUiStateMSF.value = UIState.Success(it)
+            }
+        }
+        updateLocalSubjectsFromRemote()
+    }
+
+    private fun updateLocalSubjectsFromRemote() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _subjectsUiRemoteStateMSF.value = UIState.Loading
+            subjectObservable.updateLocalFromRemote().let {
+                if (it.isSuccess) {
+                    it.getOrNull()?.forEach { subj ->
+                        updateLocalChaptersFromRemote(subj.id)
+                    }
+                    _subjectsUiRemoteStateMSF.value = UIState.SuccessNoData
+                } else {
+                    if (lastShownError !is UnknownHostException) {
+                        lastShownError = it.exceptionOrNull()
+                        _subjectsUiRemoteStateMSF.value = UIState.Error(
+                            it.exceptionOrNull()?.localizedMessage
+                                ?: "Failed to retrieve subject data"
                         )
+                    } else {
+                        _subjectsUiRemoteStateMSF.value = UIState.Idle
                     }
                 }
-                .doOnError {
-                    compositeDisposable.add(
-                        subjectObservable.fetchAllLocal()
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .delay(100, TimeUnit.MILLISECONDS)
-                            .subscribe( //potential race condition with setting ui state with the below subscribe
-                                {
-                                    _subjectsUiStateMSF.value = UIState.Success(it)
-                                },
-                                { error ->
-                                    _subjectsUiStateMSF.value = UIState.Error(error.localizedMessage ?: "Error!")
-                                }
-                            )
-                    )
-                }
-                .subscribe(
-                    { data ->
-                        lastShownError = null
-                        _subjectsUiStateMSF.value = UIState.Success(data)
-                    },
-                    { error ->
-                        if (lastShownError !is UnknownHostException) {
-                            lastShownError = error
-                            _subjectsUiStateMSF.value =
-                                UIState.Error(error.cause?.localizedMessage ?: "Error!")
-                            Log.e("TAG", "Got Error ${error.stackTraceToString()}")
-                        }
-                    }
-                )
-        )
+            }
+        }
     }
 
     fun loadChaptersOfSubject(id: String) {
-        _chaptersUiStateMSF.value = UIState.Loading
-        compositeDisposable.add(
-            chapterObservable.fetchAllChaptersLocal(id)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { chapters ->
-                        _chaptersUiStateMSF.value = UIState.Success(chapters)
-                    },
-                    { error ->
-                        _chaptersUiStateMSF.value = UIState.Error(error.cause?.localizedMessage ?: "Error!")
-                        Log.e("TAG", "Got Error ${error.stackTraceToString()}")
-                    }
-                )
-        )
+        viewModelScope.launch(Dispatchers.IO) {
+            _chaptersUiStateMSF.value = UIState.Loading
+            chapterObservable.observableLocalChapters(id).collect {
+                _chaptersUiStateMSF.value = UIState.Success(it)
+            }
+        }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        compositeDisposable.clear()  // Clear disposables
+    private fun updateLocalChaptersFromRemote(id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _chaptersRemoteUiStateMSF.value = UIState.Loading
+            chapterObservable.updateLocalFromRemote(id).let {
+                if (it.isSuccess) {
+                    _chaptersRemoteUiStateMSF.value = UIState.SuccessNoData
+                } else {
+                    _chaptersRemoteUiStateMSF.value = UIState.Error(
+                        it.exceptionOrNull()?.localizedMessage ?: "Failed to retrieve chapter data"
+                    )
+                }
+            }
+        }
     }
 }

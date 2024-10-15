@@ -5,7 +5,7 @@ import okhttp3.Request
 import okhttp3.Response
 
 class RestProcessor(private val client: OkHttpClient): RequestProcessor {
-    override fun process(request: Request): Response {
+    override suspend fun process(request: Request): Response {
         return try {
             client.newCall(request).execute()
         } catch (e: Exception) {

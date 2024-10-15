@@ -9,30 +9,34 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.example.simplerxapp.database.ApplicationDatabase
 import com.example.simplerxapp.database.entities.ChapterEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ChapterDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun add(chapter: ChapterEntity)
+    suspend fun add(chapter: ChapterEntity)
 
     @Update
-    fun update(chapter: ChapterEntity)
+    suspend fun update(chapter: ChapterEntity)
 
     @Delete
-    fun delete(chapter: ChapterEntity)
+    suspend fun delete(chapter: ChapterEntity)
 
     @Query("SELECT * FROM ${ApplicationDatabase.CHAPTERS_TABLE} WHERE id=:id")
-    fun fetchById(id: String): ChapterEntity?
+    suspend fun fetchById(id: String): ChapterEntity?
 
     @Query("SELECT * FROM ${ApplicationDatabase.CHAPTERS_TABLE} WHERE subjectId=:subId")
-    fun fetchForSubjectId(subId: String): List<ChapterEntity>
+    suspend fun fetchForSubjectId(subId: String): List<ChapterEntity>
+
+    @Query("SELECT * FROM ${ApplicationDatabase.CHAPTERS_TABLE} WHERE subjectId=:subId")
+    fun fetchObservableForSubjectId(subId: String): Flow<List<ChapterEntity>>
 
     @Query("DELETE FROM ${ApplicationDatabase.CHAPTERS_TABLE}")
-    fun deleteAll()
+    suspend fun deleteAll()
 
     @Transaction
-    fun save(chapter: ChapterEntity) {
+    suspend fun save(chapter: ChapterEntity) {
         val retrieved = fetchById(chapter.id)
         if (retrieved != null) {
             update(chapter)

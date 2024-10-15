@@ -36,6 +36,7 @@ fun SubjectsListView(
 ) {
 
     val uiState by remember { viewModel.subjectsUiStateSF }.collectAsState()
+    val apiUiState by remember { viewModel.subjectsRemoteUiStateSF }.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.loadAllSubjects()
@@ -64,7 +65,7 @@ fun SubjectsListView(
                 }
             )
         },
-        uiState = uiState
+        uiState = apiUiState
     ) {
         LazyColumn(
             modifier = Modifier

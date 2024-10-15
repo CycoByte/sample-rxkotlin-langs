@@ -5,7 +5,7 @@ import okhttp3.Request
 import okhttp3.Response
 
 class ErrorProcessor(private val next: RequestProcessor): RequestProcessor {
-    override fun process(request: Request): Response {
+    override suspend fun process(request: Request): Response {
         val response = next.process(request)
         when (response.code) {
             in 200..299 -> {} // request is successfull

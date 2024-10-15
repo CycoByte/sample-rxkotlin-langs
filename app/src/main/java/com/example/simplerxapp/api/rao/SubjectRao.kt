@@ -12,7 +12,7 @@ class SubjectRao(
     restClient: RestClient = RestClient.instance
 ): BaseRao(restClient) {
 
-    fun getAllSubjects(): Result<List<SubjectModel>> {
+    suspend fun getAllSubjects(): Result<List<SubjectModel>> {
         val request = Request.Builder()
             .get()
             .url(endpointsRao.fetch().getSubjects())

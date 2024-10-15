@@ -44,6 +44,7 @@ fun ChaptersListView(
     }
 
     val uiState by remember { viewModel.chaptersUiStateSF }.collectAsState()
+    val remoteUiState by remember { viewModel.chaptersRemoteUiStateSF }.collectAsState()
 
     var chaptersList: List<ChapterModel> by remember {
         mutableStateOf(emptyList())
@@ -77,7 +78,7 @@ fun ChaptersListView(
             )
         },
 
-        uiState = uiState
+        uiState = remoteUiState
     ) {
         LazyColumn(
             modifier = Modifier
