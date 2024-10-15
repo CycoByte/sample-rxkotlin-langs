@@ -7,10 +7,8 @@ import io.reactivex.rxjava3.core.Maybe
 class EndpointsObservable(
     private val endpointRao: ApiEndpointRao
 ) {
-
-    fun fetchAll(): Maybe<ApiEndpoints> {
-        return Maybe.fromCallable {
-            endpointRao.fetch()
-        }
+    //could also add endpoint dao to retrieve from DB if needed
+    suspend fun fetchAll(): ApiEndpoints {
+        return endpointRao.fetch()
     }
 }
