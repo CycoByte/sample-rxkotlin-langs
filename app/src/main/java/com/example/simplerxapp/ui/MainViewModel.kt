@@ -82,10 +82,6 @@ class MainViewModel: ViewModel() {
             chapterObservable.updateLocalFromRemote(id).let {
                 if (it.isSuccess) {
                     _chaptersRemoteUiStateMSF.value = UIState.SuccessNoData
-                } else {
-                    _chaptersRemoteUiStateMSF.value = UIState.Error(
-                        it.exceptionOrNull()?.localizedMessage ?: "Failed to retrieve chapter data"
-                    )
                 }
             }
         }

@@ -5,11 +5,9 @@ import com.example.simplerxapp.models.SubjectModel
 import kotlinx.coroutines.flow.Flow
 
 class SubjectObservable(
-//    private val endpointsObservable: EndpointsObservable,
     private val apiObservable: ApiObservable = ApiObservable(),
     private val dataObservable: DataObservable = DataObservable(ApplicationDatabase.instance.getSubjectDao())
 ) {
-    private var inMemory: List<SubjectModel> = listOf()
 
     suspend fun fetchAllLocal(): List<SubjectModel> = dataObservable.fetchAll()
     suspend fun deleteAllLocal() = dataObservable.deleteAll()
@@ -21,7 +19,6 @@ class SubjectObservable(
         val res = apiObservable.fetchAll()
         return if (res.isSuccess) {
             res.getOrNull()?.let {
-                inMemory = it
                 dataObservable.saveAll(it)
             }
             Result.success(res.getOrNull())

@@ -7,6 +7,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import com.example.simplerxapp.ui.UIState
 
 @Composable
@@ -21,7 +22,9 @@ fun LoadableContentHolder(
     ) {
         AnimatedVisibility(
             visible = uiState.isLoading,
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier
+                .zIndex(200F)
+                .align(Alignment.Center),
         ) {
             CircularProgressIndicator()
         }

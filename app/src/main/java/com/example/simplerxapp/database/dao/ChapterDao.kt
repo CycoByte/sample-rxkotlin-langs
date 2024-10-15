@@ -1,5 +1,6 @@
 package com.example.simplerxapp.database.dao
 
+import android.util.Log
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -40,6 +41,18 @@ interface ChapterDao {
         val retrieved = fetchById(chapter.id)
         if (retrieved != null) {
             update(chapter)
+        } else {
+            add(chapter)
+        }
+    }
+
+    @Transaction
+    suspend fun saveIfNeeded(chapter: ChapterEntity) {
+        val retrieved = fetchById(chapter.id)
+        if (retrieved != null) {
+            if (retrieved != chapter) {
+                update(chapter)
+            }
         } else {
             add(chapter)
         }

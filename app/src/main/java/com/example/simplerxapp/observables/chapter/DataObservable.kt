@@ -11,8 +11,12 @@ class DataObservable(
 
     suspend fun fetchForSubjectId(id: String) = dao.fetchForSubjectId(id).map { it.toDomain() }
 
-    suspend fun saveAll(items: List<ChapterModel>) = items.forEach {
-        dao.save(it.toEntity())
+    suspend fun saveAll(items: List<ChapterModel>, checkChanged: Boolean) = items.forEach {
+        if (checkChanged) {
+            dao.saveIfNeeded(it.toEntity())
+        } else {
+            dao.save(it.toEntity())
+        }
     }
 
     suspend fun deleteAll() = dao.deleteAll()

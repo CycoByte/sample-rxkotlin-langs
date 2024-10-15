@@ -1,5 +1,6 @@
 package com.example.simplerxapp.api
 
+import com.example.simplerxapp.api.processors.ApiMemoryCache
 import com.example.simplerxapp.api.processors.ErrorProcessor
 import com.example.simplerxapp.api.processors.RequestLogProcessor
 import com.example.simplerxapp.api.processors.RequestProcessor
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit
 
 class RestClient private constructor() {
 
+    private lateinit var cache: ApiMemoryCache
     protected lateinit var processor: RequestProcessor
 
     fun init() {
@@ -20,7 +22,8 @@ class RestClient private constructor() {
             .writeTimeout(10000, TimeUnit.MILLISECONDS)
             .readTimeout(10000, TimeUnit.MILLISECONDS)
             .build()
-        processor = RequestLogProcessor(ErrorProcessor(RestProcessor(client)))
+        cache = ApiMemoryCache(ErrorProcessor(RestProcessor(client)))
+        processor = RequestLogProcessor(cache)
     }
 
     suspend fun <T> execute(request: Request, expected: Class<T>): Result<T> {
@@ -35,6 +38,8 @@ class RestClient private constructor() {
     }
 
     suspend fun execute(request: Request): Response = processor.process(request)
+
+    fun clearCache() = cache.clearCached()
 
     companion object {
 
