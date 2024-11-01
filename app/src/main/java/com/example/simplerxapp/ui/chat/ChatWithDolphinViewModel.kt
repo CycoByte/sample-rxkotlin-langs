@@ -22,14 +22,18 @@ class ChatWithDolphinViewModel: ViewModel() {
 
     val randomSentSuccessFeedback = listOf(
         ChatMessage.Feedback.Positive("id",),
-        ChatMessage.Feedback.Suggestion("id", "you can do better"),
-        ChatMessage.Feedback.Wrong("id", "invalid input")
+        ChatMessage.Feedback.Suggestion("id", "you can do better", "this is a very large test to see how this will fit in the view with multiple lines, here the used is writing way too much.",
+        ),
+        ChatMessage.Feedback.Wrong("id", "invalid input", "this is a very large test to see how this will fit in the view with multiple lines, here the used is writing way too much.",
+        )
     )
 
     fun loadMessages() {
-        viewModelScope.launch {
-            delay(2000)
-            messagesListState.addAll(mockMessages.sortedBy { it.order })
+        if (messagesListState.isEmpty()) {
+            viewModelScope.launch {
+                delay(2000)
+                messagesListState.addAll(mockMessages.sortedBy { it.order })
+            }
         }
     }
 
@@ -78,11 +82,11 @@ class ChatWithDolphinViewModel: ViewModel() {
             suggestions = listOf(
                 ChatMessage.Feedback.Suggestion(
                     id = "1",
-                    message = "Rainbows"
+                    shortMessage = "Rainbows"
                 ),
                 ChatMessage.Feedback.Suggestion(
                     id = "2",
-                    message = "Unicorns"
+                    shortMessage = "Unicorns"
                 )
             )
         )
@@ -149,11 +153,11 @@ class ChatWithDolphinViewModel: ViewModel() {
                 suggestions = listOf(
                     ChatMessage.Feedback.Suggestion(
                         id = "1",
-                        message = "Rainbows"
+                        shortMessage = "Rainbows"
                     ),
                     ChatMessage.Feedback.Suggestion(
                         id = "2",
-                        message = "Unicorns"
+                        shortMessage = "Unicorns"
                     )
                 )
             ),

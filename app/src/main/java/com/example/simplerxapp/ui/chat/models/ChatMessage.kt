@@ -26,20 +26,27 @@ sealed interface ChatMessage {
     ): ChatMessage
 
     sealed interface Feedback {
+
         val id: String
+        val shortMessage: String
+        val fullMessage: String
 
         data class Positive(
-            override val id: String
+            override val id: String,
+            override val shortMessage: String = "",
+            override val fullMessage: String = ""
         ): Feedback
 
         data class Suggestion(
             override val id: String,
-            val message: String,
+            override val shortMessage: String,
+            override val fullMessage: String = ""
         ): Feedback
 
         data class Wrong(
             override val id: String,
-            val message: String,
+            override val shortMessage: String,
+            override val fullMessage: String = ""
         ): Feedback
     }
 }

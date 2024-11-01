@@ -151,7 +151,7 @@ fun SenderBubbleView(
                             },
                         icon = R.drawable.baseline_error_outline_24,
                         color = Cl_Error500,
-                        info = feedback.message
+                        info = feedback.shortMessage
                     )
                 }
                 is ChatMessage.Feedback.Suggestion -> {
@@ -163,7 +163,7 @@ fun SenderBubbleView(
                             },
                         icon = R.drawable.baseline_error_outline_24,
                         color = Cl_Warning500,
-                        info = feedback.message
+                        info = feedback.shortMessage
                     )
                 }
                 else -> {}

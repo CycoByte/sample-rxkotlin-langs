@@ -134,7 +134,7 @@ private fun SuggestionView(
     ) {
         Text(
             modifier = Modifier.padding(8.dp),
-            text = suggestion.message
+            text = suggestion.shortMessage
         )
     }
 }
@@ -205,11 +205,11 @@ private fun ReceiverCharPreview() {
             suggestions = listOf(
                 ChatMessage.Feedback.Suggestion(
                     id = "1",
-                    message = "Rainbows"
+                    shortMessage = "Rainbows"
                 ),
                 ChatMessage.Feedback.Suggestion(
                     id = "2",
-                    message = "Unicorns"
+                    shortMessage = "Unicorns"
                 )
             )
         ),
