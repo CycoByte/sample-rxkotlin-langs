@@ -3,4 +3,5 @@
     <string name="subjects">subjects</string>
     <string name="chapters_for_subject_arg">chapters for subject %s</string>
     <string name="no_chapters_found">no chapters found</string>
+    <string name="great_work">great work 🙂</string>
 </resources>

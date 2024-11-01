@@ -71,6 +71,7 @@ dependencies {
 
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
+//    implementation("com.github.SmartToolFactory:Compose-Bubble:1.1.0")
 
     // To use Kotlin annotation processing tool (kapt)
 //    kapt("androidx.room:room-compiler:$room_version")
