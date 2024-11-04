@@ -3,8 +3,13 @@ package com.example.simplerxapp.ui.chat
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -33,12 +38,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.simplerxapp.ui.UIState
 import com.example.simplerxapp.ui.chat.models.ChatMessage
+import com.example.simplerxapp.ui.composables.chat.ChatDotLoadingIndicator
 import com.example.simplerxapp.ui.composables.chat.ChatInputView
 import com.example.simplerxapp.ui.composables.chat.ReceiverBubbleView
 import com.example.simplerxapp.ui.composables.chat.SenderBubbleView
@@ -59,6 +66,7 @@ fun ChatWithDolphinView(
 
     var bottomSheetFeedbackData by remember { mutableStateOf<ChatMessage.Feedback?>(null) }
     val viewModel: ChatWithDolphinViewModel = viewModel()
+    val isDolphinLoading by remember { viewModel.isDolphinLoadingMS }
     val messagesList = remember {
         viewModel.messagesListState
     }
@@ -83,10 +91,9 @@ fun ChatWithDolphinView(
         viewModel.loadMessages()
     }
 
-    LaunchedEffect(messagesList.size) {
-        Log.d("TAG", "Last sent id updated: $lastSentId")
+    LaunchedEffect(messagesList.size, isDolphinLoading) {
         if (messagesList.isNotEmpty()) {
-            listState.animateScrollToItem(messagesList.lastIndex)
+            listState.animateScrollToItem(messagesList.lastIndex + 1) // + 1 because of loader in list
         }
     }
 
@@ -116,12 +123,13 @@ fun ChatWithDolphinView(
                 .fillMaxSize(),
         ) {
             LazyColumn(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 contentPadding = PaddingValues(vertical = 16.dp),
                 state = listState
             ) {
-                items(messagesList) { message ->
+                items(messagesList, key = { it.id }) { message ->
                     if (message is ChatMessage.Sent) {
                         SenderBubbleView(
                             modifier = Modifier
@@ -138,7 +146,8 @@ fun ChatWithDolphinView(
                         )
                     } else if (message is ChatMessage.Received) {
                         ReceiverBubbleView(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth(),
                             message = message,
                             isLast = lastReceivedId == message.id,
                             contentPadding = PaddingValues(start = 16.dp),
@@ -149,6 +158,22 @@ fun ChatWithDolphinView(
                                 Log.d("TEST", "Handle this $it")
                             }
                         )
+                    }
+                }
+                item {
+                    AnimatedVisibility(
+                        isDolphinLoading,
+                        enter = fadeIn(tween(100)),
+                        exit = fadeOut(tween(60))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            ChatDotLoadingIndicator()
+                        }
                     }
                 }
                 item {

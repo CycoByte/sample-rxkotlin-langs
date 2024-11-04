@@ -3,6 +3,7 @@ package com.example.simplerxapp.ui.chat
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.simplerxapp.tools.Utils.getTimeNow
@@ -19,20 +20,19 @@ import kotlin.random.Random
 class ChatWithDolphinViewModel: ViewModel() {
 
     val messagesListState = mutableStateListOf<ChatMessage>()
+    val isDolphinLoadingMS = mutableStateOf(false)
 
-    val randomSentSuccessFeedback = listOf(
-        ChatMessage.Feedback.Positive("id",),
-        ChatMessage.Feedback.Suggestion("id", "you can do better", "this is a very large test to see how this will fit in the view with multiple lines, here the used is writing way too much.",
-        ),
-        ChatMessage.Feedback.Wrong("id", "invalid input", "this is a very large test to see how this will fit in the view with multiple lines, here the used is writing way too much.",
-        )
-    )
+    private fun isDolphinResponding(loading: Boolean) {
+        isDolphinLoadingMS.value = loading
+    }
 
     fun loadMessages() {
         if (messagesListState.isEmpty()) {
             viewModelScope.launch {
+                isDolphinResponding(true)
                 delay(2000)
                 messagesListState.addAll(mockMessages.sortedBy { it.order })
+                isDolphinResponding(false)
             }
         }
     }
@@ -68,7 +68,8 @@ class ChatWithDolphinViewModel: ViewModel() {
     }
 
     private suspend fun getDolphinRandomResponse() {
-        delay(900)
+        isDolphinResponding(true)
+        delay(1400)
         val lastOrder = messagesListState.lastOrNull()?.order ?: 1
         val constructedMessage = ChatMessage.Received(
             id = UUID.randomUUID().toString(),
@@ -91,6 +92,7 @@ class ChatWithDolphinViewModel: ViewModel() {
             )
         )
         messagesListState.add(constructedMessage)
+        isDolphinResponding(false)
     }
 
     private fun sendFailedMockFlow(id: String) {
@@ -123,6 +125,15 @@ class ChatWithDolphinViewModel: ViewModel() {
     }
 
     companion object {
+
+        private val randomSentSuccessFeedback = listOf(
+            ChatMessage.Feedback.Positive("id",),
+            ChatMessage.Feedback.Suggestion("id", "you can do better", "this is a very large test to see how this will fit in the view with multiple lines, here the used is writing way too much.",
+            ),
+            ChatMessage.Feedback.Wrong("id", "invalid input", "this is a very large test to see how this will fit in the view with multiple lines, here the used is writing way too much.",
+            )
+        )
+
         val mockMessages = listOf(
             ChatMessage.Received(
                 id = UUID.randomUUID().toString(),
