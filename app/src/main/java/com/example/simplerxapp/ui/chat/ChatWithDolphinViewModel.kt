@@ -48,7 +48,7 @@ class ChatWithDolphinViewModel: ViewModel() {
             feedback = null
         )
         messagesListState.add(constructedMessage)
-        if (Random.nextBoolean()) {
+        if (!Random.nextBoolean()) {
             sendSuccessMockFlow(constructedMessage.id)
         } else {
             sendFailedMockFlow(constructedMessage.id)

@@ -2,9 +2,9 @@ package com.example.simplerxapp.ui.chat.models
 
 import androidx.compose.runtime.Stable
 
+@Stable
 sealed interface ChatMessage {
 
-    @Stable
     val id: String
     val order: Int
     val body: String
