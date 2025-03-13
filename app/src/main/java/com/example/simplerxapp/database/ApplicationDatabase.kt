@@ -1,6 +1,7 @@
 package com.example.simplerxapp.database
 
 import android.content.Context
+import android.content.Intent
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -8,6 +9,8 @@ import com.example.simplerxapp.database.dao.ChapterDao
 import com.example.simplerxapp.database.dao.SubjectDao
 import com.example.simplerxapp.database.entities.ChapterEntity
 import com.example.simplerxapp.database.entities.SubjectEntity
+import java.io.File
+import java.io.IOException
 
 @Database(
     entities = [

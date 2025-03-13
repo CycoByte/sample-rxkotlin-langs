@@ -24,10 +24,10 @@ class DataObservable(
     companion object {
         private fun ChapterModel.toEntity(): ChapterEntity {
             return ChapterEntity(
-                id = this.id,
-                status = this.status,
+                id = id,
+                status = status,
                 type = type,
-                title = title,
+                title = title + "-mod", // todo added just for visible change when restoring back db
                 description = description,
                 template = template,
                 subjectId = subjectId

@@ -2,6 +2,8 @@ package com.example.simplerxapp.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.simplerxapp.SampleApplication
+import com.example.simplerxapp.managers.DatabaseManager
 import com.example.simplerxapp.observables.chapter.ChapterObservable
 import com.example.simplerxapp.observables.subject.SubjectObservable
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +13,10 @@ import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 
 class MainViewModel: ViewModel() {
+
+    private val dbManager: DatabaseManager by lazy {
+        SampleApplication.databaseManager
+    }
 
     private val subjectObservable = SubjectObservable()
     private val chapterObservable = ChapterObservable()
@@ -40,7 +46,6 @@ class MainViewModel: ViewModel() {
                 _subjectsUiStateMSF.value = UIState.Success(it)
             }
         }
-        updateLocalSubjectsFromRemote()
     }
 
     private fun updateLocalSubjectsFromRemote() {
@@ -86,6 +91,20 @@ class MainViewModel: ViewModel() {
                     _chaptersRemoteUiStateMSF.value = UIState.Error(
                         it.exceptionOrNull()?.localizedMessage ?: "Failed to retrieve chapter data"
                     )
+                }
+            }
+        }
+    }
+
+    fun onUserIntent(action: ActionIntent) {
+        viewModelScope.launch(Dispatchers.IO) {
+            when (action) {
+                is ActionIntent.ReloadData -> updateLocalSubjectsFromRemote()
+                is ActionIntent.CreateDatabaseBackup -> {
+                    dbManager.backupDatabase()
+                }
+                is ActionIntent.RestoreDatabaseBackup -> {
+                    dbManager.restoreDatabase()
                 }
             }
         }

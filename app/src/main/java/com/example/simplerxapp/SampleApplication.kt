@@ -1,11 +1,18 @@
 package com.example.simplerxapp
 
 import android.app.Application
-import com.example.simplerxapp.database.ApplicationDatabase
+import com.example.simplerxapp.managers.AppDatabaseManager
+import com.example.simplerxapp.managers.DatabaseManager
 
 class SampleApplication: Application() {
     override fun onCreate() {
         super.onCreate()
-        ApplicationDatabase.create(this.baseContext)
+        databaseManager = AppDatabaseManager(this.baseContext).also {
+            it.createDatabase()
+        }
+    }
+
+    companion object {
+        lateinit var databaseManager: DatabaseManager
     }
 }

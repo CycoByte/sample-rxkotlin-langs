@@ -19,12 +19,6 @@ fun LoadableContentHolder(
         modifier = Modifier
             .then(modifier)
     ) {
-        AnimatedVisibility(
-            visible = uiState.isLoading,
-            modifier = Modifier.align(Alignment.Center),
-        ) {
-            CircularProgressIndicator()
-        }
 
         Box(
             modifier = Modifier
@@ -32,6 +26,13 @@ fun LoadableContentHolder(
                 .matchParentSize()
         ) {
             content()
+        }
+
+        AnimatedVisibility(
+            visible = uiState.isLoading,
+            modifier = Modifier.align(Alignment.Center),
+        ) {
+            CircularProgressIndicator()
         }
     }
 }

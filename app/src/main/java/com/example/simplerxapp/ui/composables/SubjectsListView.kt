@@ -8,7 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -21,10 +27,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.simplerxapp.R
 import com.example.simplerxapp.models.SubjectModel
+import com.example.simplerxapp.ui.ActionIntent
 import com.example.simplerxapp.ui.MainViewModel
 import com.example.simplerxapp.ui.composables.containers.MainContentHolder
 
@@ -35,6 +43,7 @@ fun SubjectsListView(
     navigateToChapters: (SubjectModel) -> Unit
 ) {
 
+    val context = LocalContext.current
     val uiState by remember { viewModel.subjectsUiStateSF }.collectAsState()
     val apiUiState by remember { viewModel.subjectsRemoteUiStateSF }.collectAsState()
 
@@ -62,6 +71,40 @@ fun SubjectsListView(
                         text = stringResource(R.string.subjects),
                         style = MaterialTheme.typography.headlineMedium
                     )
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            viewModel.onUserIntent(ActionIntent.ReloadData)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            viewModel.onUserIntent(ActionIntent.RestoreDatabaseBackup(context))
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Build,
+                            contentDescription = null
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            viewModel.onUserIntent(ActionIntent.CreateDatabaseBackup(context))
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null
+                        )
+                    }
                 }
             )
         },
